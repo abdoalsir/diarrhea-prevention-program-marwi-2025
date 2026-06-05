@@ -414,7 +414,9 @@ pre_always = [(pre[c] == 2).mean() * 100 for c in prac_always_cols if c in pre.c
 post_always = [
     (post[c] == 2).mean() * 100 for c in prac_always_cols if c in post.columns
 ]
-valid_prac = [label for c, label in zip(prac_always_cols, prac_labels) if c in pre.columns]
+valid_prac = [
+    label for c, label in zip(prac_always_cols, prac_labels) if c in pre.columns
+]
 
 y = np.arange(len(valid_prac))
 fig, ax = plt.subplots(figsize=(9, 5))
