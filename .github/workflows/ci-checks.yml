@@ -1,0 +1,64 @@
+name: CI Checks
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  ls_linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ls-lint/action@v2.2.3
+
+  md_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+      - name: Run markdownlint
+        run: markdownlint "**/*.md" --config .markdownlint.yml
+
+  py_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python - Check Formatting
+        uses: astral-sh/ruff-action@v1
+        with:
+          args: "format --check --exclude '*.ipynb'"
+
+  py_linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python - Check Linting - ruff
+        uses: astral-sh/ruff-action@v1
+      - name: python version
+        run: python --version
+        shell: bash
+        if: always()
+      - name: install pylint
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+        shell: bash
+      - name: Python - Check Linting - pylint
+        run: "pylint **/*.py --ignore-paths=env,venv,.env,.venv,__pycache__,.git || echo '::warning title=Pylint Error(s)::Discuss solutions and trade-offs in code review.'"
+        shell: bash
+
+  py_notebook_linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: python version
+        run: python --version
+        shell: bash
+        if: always()
+      - name: install nbqa
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint nbqa
+        shell: bash
+      - name: Python Notebooks - Check Linting - nbqa
+        run: "nbqa pylint 3_notebooks/*.ipynb || echo '::warning title=NoteBook QA Error(s)::Discuss solutions and trade-offs in code review.'"
+        shell: bash
